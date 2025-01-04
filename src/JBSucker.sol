@@ -538,6 +538,11 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
     function toRemote(address token) external payable override {
         JBRemoteToken memory remoteToken = _remoteTokenFor[token];
 
+        // Ensure that the token does not have an emergency hatch enabled.
+        if (remoteToken.emergencyHatch) {
+            revert JBSucker_TokenHasInvalidEmergencyHatchState(token);
+        }
+
         // Ensure that the amount being bridged exceeds the minimum bridge amount.
         if (_outboxOf[token].balance < remoteToken.minBridgeAmount) {
             revert JBSucker_QueueInsufficientSize(_outboxOf[token].balance, remoteToken.minBridgeAmount);
