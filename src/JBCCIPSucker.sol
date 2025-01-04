@@ -240,7 +240,7 @@ contract JBCCIPSucker is JBSucker, IAny2EVMMessageReceiver {
 
         // Refund remaining balance.
         // slither-disable-next-line calls-loop,msg-value-loop
-        (bool sent,) = _msgSender().call{value: msg.value - fees}("");
+        (bool sent,) = _msgSender().call{value: transportPayment - fees}("");
         if (!sent) revert JBCCIPSucker_FailedToRefundFee();
     }
 
