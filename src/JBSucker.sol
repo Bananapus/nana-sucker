@@ -786,7 +786,10 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
 
         // If the remote token is being set to the 0 address (which disables bridging), send any remaining outbox funds
         // to the remote chain.
-        if (map.remoteToken == address(0) && _outboxOf[token].balance != 0) {
+        if (
+            map.remoteToken == address(0) && _outboxOf[token].balance != 0
+                && _outboxOf[token].balance >= map.minBridgeAmount
+        ) {
             _sendRoot({transportPayment: transportPaymentValue, token: token, remoteToken: currentMapping});
         }
 
