@@ -6,6 +6,7 @@ import {IJBCashOutTerminal} from "@bananapus/core/src/interfaces/IJBCashOutTermi
 import {IJBController} from "@bananapus/core/src/interfaces/IJBController.sol";
 import {IJBDirectory} from "@bananapus/core/src/interfaces/IJBDirectory.sol";
 import {IJBPermissions} from "@bananapus/core/src/interfaces/IJBPermissions.sol";
+import {IJBPermissioned} from "@bananapus/core/src/interfaces/IJBPermissioned.sol";
 import {IJBTerminal} from "@bananapus/core/src/interfaces/IJBTerminal.sol";
 import {IJBTokens} from "@bananapus/core/src/interfaces/IJBTokens.sol";
 import {JBConstants} from "@bananapus/core/src/libraries/JBConstants.sol";
@@ -222,7 +223,7 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IJBSuckerExtended).interfaceId || interfaceId == type(IJBSucker).interfaceId
-            || super.supportsInterface(interfaceId);
+            || interfaceId == type(IJBPermissioned).interfaceId || super.supportsInterface(interfaceId);
     }
 
     //*********************************************************************//
