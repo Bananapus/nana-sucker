@@ -76,6 +76,59 @@ contract SuckerEmergencyTest is Test {
         sucker.exitThroughEmergencyHatch(claim);
     }
 
+    /// @notice Ensures that if a sucker is send disabled and a claim is valid that a user can withdraw their deposit.
+    function testEmergencyExitWhenSendingDisabled(
+        bool sendDisabled,
+        bool isValidClaim,
+        JBClaim memory claim
+    )
+        external
+    {
+        uint256 projectId = 1;
+        TestSucker sucker = _createTestSucker(projectId, "");
+
+        // Mock the Directory.
+        vm.mockCall(DIRECTORY, abi.encodeCall(IJBDirectory.PROJECTS, ()), abi.encode(PROJECT));
+        // Mock the owner of the project.
+        vm.mockCall(PROJECT, abi.encodeCall(IERC721.ownerOf, (projectId)), abi.encode(address(this)));
+
+        // Set the outbox balance to be atleast the same as the attempted exit amount.
+        sucker.test_setOutboxBalance(claim.token, claim.leaf.terminalTokenAmount);
+
+        // Set the state of the sucker to be deprecated.
+        if (sendDisabled) {
+            uint256 deprecationTimestamp = block.timestamp + 14 days;
+            sucker.setDeprecation(uint40(deprecationTimestamp));
+
+            // Foward until sending is disabled, which is the next block.
+            vm.warp(block.timestamp + 1);
+        }
+
+        // Mock the calls the sucker does to mint the tokens to the user.
+        vm.mockCall(DIRECTORY, abi.encodeCall(IJBDirectory.controllerOf, (projectId)), abi.encode(CONTROLLER));
+        vm.mockCall(
+            CONTROLLER,
+            abi.encodeCall(
+                IJBController.mintTokensOf, (projectId, claim.leaf.projectTokenCount, claim.leaf.beneficiary, "", false)
+            ),
+            abi.encode(claim.leaf.projectTokenCount)
+        );
+
+        // This ensures that if either the claim is considered invalid or that if the sucker was not deprecated that the
+        // emergency exit would not work.
+        sucker.test_setNextMerkleCheckToBe(isValidClaim);
+        if (!isValidClaim || !sendDisabled) {
+            vm.expectRevert();
+        }
+
+        // Attempt to emergency exit.
+        sucker.exitThroughEmergencyHatch(claim);
+
+        // Attempt to double exit.
+        vm.expectRevert();
+        sucker.exitThroughEmergencyHatch(claim);
+    }
+
     /// @notice Ensures that users can exit on the local chain if the emergency hatch is opened for the token.
     function testEmergencyExitWhenEmergencyHatchOpenForToken(
         bool tokenAllowEmergencyHatch,
@@ -130,13 +183,17 @@ contract SuckerEmergencyTest is Test {
 
     /// @notice tests that the deprecation can be set, changed and cancelled.
     function testCancelDeprecation(uint40 currentTime, uint40 deprecateAt, uint40 changeDeprecationTo) external {
+        uint40 messagingDelay = 14 days;
+        // The time that we have to change the deprecation.
+        uint40 bufferTime;
         // Ensure that none of the math overflows which would cause unexpected test results.
-        vm.assume(type(uint40).max - 14 days > currentTime);
-        vm.assume(type(uint40).max - 14 days > deprecateAt);
-        vm.assume(type(uint40).max - 14 days > changeDeprecationTo);
+        vm.assume(type(uint40).max - messagingDelay > currentTime);
+        vm.assume(type(uint40).max - messagingDelay > deprecateAt);
+        vm.assume(type(uint40).max - messagingDelay > changeDeprecationTo);
         // Ensure that the inputs are within the expected bounds.
-        vm.assume(currentTime + 14 days < deprecateAt);
-        vm.assume(deprecateAt + 7 days < changeDeprecationTo || changeDeprecationTo == 0);
+        vm.assume(currentTime + messagingDelay < deprecateAt);
+        vm.assume(deprecateAt + messagingDelay < changeDeprecationTo || changeDeprecationTo == 0);
+        bufferTime = deprecateAt - messagingDelay - currentTime;
 
         uint256 projectId = 1;
         TestSucker sucker = _createTestSucker(projectId, "");
@@ -152,7 +209,9 @@ contract SuckerEmergencyTest is Test {
         sucker.setDeprecation(uint40(deprecateAt));
 
         // Foward to a time before its fully deprecated..
-        vm.warp(currentTime + 7 days);
+        vm.warp(currentTime + bufferTime - 1);
+        // The state should be `DEPRECATION_PENDING`.
+        assertEq(uint8(sucker.state()), 1);
         // Change the time at which it deprecates
         sucker.setDeprecation(changeDeprecationTo);
     }

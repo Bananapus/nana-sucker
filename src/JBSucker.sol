@@ -211,12 +211,12 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
         }
 
         // The sucker will no longer send new roots to the pair, but it will accept new incoming roots.
+        // Additionally it will let users exit here now that we can no longer send roots/tokens.
         if (block.timestamp < __deprecatedAfter) {
             return JBSuckerState.SENDING_DISABLED;
         }
 
-        // The sucker is now in the final state of deprecation. It will no longer allow new roots and if needed it will
-        // let users emergency exit.
+        // The sucker is now in the final state of deprecation. It will no longer allow new roots.
         return JBSuckerState.DEPRECATED;
     }
 
@@ -577,9 +577,12 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
     /// longer be functional and it will let all users exit.
     /// @param timestamp The time after which the sucker will be deprecated. Or `0` to remove the upcoming deprecation.
     function setDeprecation(uint40 timestamp) external override {
-        // As long as the sucker has not reached the final deprecation state its deprecation time can be
+        // As long as the sucker has not started letting users withdrawal, its deprecation time can be
         // extended/shortened.
-        if (state() == JBSuckerState.DEPRECATED) revert JBSucker_Deprecated();
+        JBSuckerState deprecationState = state();
+        if (deprecationState == JBSuckerState.DEPRECATED || deprecationState == JBSuckerState.SENDING_DISABLED) {
+            revert JBSucker_Deprecated();
+        }
 
         // slither-disable-next-line calls-loop
         uint256 _projectId = projectId();
@@ -980,7 +983,11 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
         internal
     {
         // Make sure that the emergencyHatch is enabled for the token.
-        if (!_remoteTokenFor[terminalToken].emergencyHatch && state() != JBSuckerState.DEPRECATED) {
+        JBSuckerState deprecationState = state();
+        if (
+            deprecationState != JBSuckerState.DEPRECATED && deprecationState != JBSuckerState.SENDING_DISABLED
+                && !_remoteTokenFor[terminalToken].emergencyHatch
+        ) {
             revert JBSucker_TokenHasInvalidEmergencyHatchState(terminalToken);
         }
 
