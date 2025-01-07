@@ -124,7 +124,7 @@ contract JBSuckerRegistry is ERC2771Context, Ownable, JBPermissioned, IJBSuckerR
     /// @notice Helper function for retrieving the projects suckers and their metadata.
     /// @param projectId The ID of the project to get the suckers of.
     /// @return pairs The pairs of suckers and their metadata.
-    function getSuckerPairs(uint256 projectId) external view returns (JBSuckersPair[] memory pairs) {
+    function getSuckerPairsOf(uint256 projectId) external view returns (JBSuckersPair[] memory pairs) {
         // Get the suckers of the project.
         address[] memory suckers = _suckersOf[projectId].keys();
 
