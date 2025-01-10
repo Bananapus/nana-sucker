@@ -66,27 +66,6 @@ contract JBSuckerRegistry is ERC2771Context, Ownable, JBPermissioned, IJBSuckerR
     mapping(uint256 => EnumerableMap.AddressToUintMap) internal _suckersOf;
 
     //*********************************************************************//
-    // ------------------------ internal views --------------------------- //
-    //*********************************************************************//
-
-    /// @notice The calldata. Preferred to use over `msg.data`.
-    /// @return calldata The `msg.data` of this call.
-    function _msgData() internal view override(ERC2771Context, Context) returns (bytes calldata) {
-        return ERC2771Context._msgData();
-    }
-
-    /// @notice The message's sender. Preferred to use over `msg.sender`.
-    /// @return sender The address which sent this call.
-    function _msgSender() internal view override(ERC2771Context, Context) returns (address sender) {
-        return ERC2771Context._msgSender();
-    }
-
-    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
-    function _contextSuffixLength() internal view virtual override(ERC2771Context, Context) returns (uint256) {
-        return ERC2771Context._contextSuffixLength();
-    }
-
-    //*********************************************************************//
     // -------------------------- constructor ---------------------------- //
     //*********************************************************************//
 
@@ -148,6 +127,28 @@ contract JBSuckerRegistry is ERC2771Context, Ownable, JBPermissioned, IJBSuckerR
     function suckersOf(uint256 projectId) external view override returns (address[] memory) {
         return _suckersOf[projectId].keys();
     }
+
+    //*********************************************************************//
+    // ------------------------ internal views --------------------------- //
+    //*********************************************************************//
+
+    /// @notice The calldata. Preferred to use over `msg.data`.
+    /// @return calldata The `msg.data` of this call.
+    function _msgData() internal view override(ERC2771Context, Context) returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }
+
+    /// @notice The message's sender. Preferred to use over `msg.sender`.
+    /// @return sender The address which sent this call.
+    function _msgSender() internal view override(ERC2771Context, Context) returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
+
+    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
+    function _contextSuffixLength() internal view virtual override(ERC2771Context, Context) returns (uint256) {
+        return ERC2771Context._contextSuffixLength();
+    }
+
 
     //*********************************************************************//
     // ---------------------- external transactions ---------------------- //

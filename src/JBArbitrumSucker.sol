@@ -57,6 +57,29 @@ contract JBArbitrumSucker is JBSucker, IJBArbitrumSucker {
     JBLayer public immutable override LAYER;
 
     //*********************************************************************//
+    // ---------------------------- constructor -------------------------- //
+    //*********************************************************************//
+
+    /// @param directory A contract storing directories of terminals and controllers for each project.
+    /// @param permissions A contract storing permissions.
+    /// @param tokens A contract that manages token minting and burning.
+    /// @param addToBalanceMode The mode of adding tokens to balance.
+    constructor(
+        JBArbitrumSuckerDeployer deployer,
+        IJBDirectory directory,
+        IJBPermissions permissions,
+        IJBTokens tokens,
+        JBAddToBalanceMode addToBalanceMode,
+        address trusted_forwarder
+    )
+        JBSucker(directory, permissions, tokens, addToBalanceMode, trusted_forwarder)
+    {
+        GATEWAYROUTER = JBArbitrumSuckerDeployer(deployer).arbGatewayRouter();
+        ARBINBOX = JBArbitrumSuckerDeployer(deployer).arbInbox();
+        LAYER = JBArbitrumSuckerDeployer(deployer).arbLayer();
+    }
+
+    //*********************************************************************//
     // ------------------------ external views --------------------------- //
     //*********************************************************************//
 
@@ -88,29 +111,6 @@ contract JBArbitrumSucker is JBSucker, IJBArbitrumSucker {
 
         // If we are the L2 peer, check using the `AddressAliasHelper`.
         return sender == AddressAliasHelper.applyL1ToL2Alias(peer());
-    }
-
-    //*********************************************************************//
-    // ---------------------------- constructor -------------------------- //
-    //*********************************************************************//
-
-    /// @param directory A contract storing directories of terminals and controllers for each project.
-    /// @param permissions A contract storing permissions.
-    /// @param tokens A contract that manages token minting and burning.
-    /// @param addToBalanceMode The mode of adding tokens to balance.
-    constructor(
-        JBArbitrumSuckerDeployer deployer,
-        IJBDirectory directory,
-        IJBPermissions permissions,
-        IJBTokens tokens,
-        JBAddToBalanceMode addToBalanceMode,
-        address trusted_forwarder
-    )
-        JBSucker(directory, permissions, tokens, addToBalanceMode, trusted_forwarder)
-    {
-        GATEWAYROUTER = JBArbitrumSuckerDeployer(deployer).arbGatewayRouter();
-        ARBINBOX = JBArbitrumSuckerDeployer(deployer).arbInbox();
-        LAYER = JBArbitrumSuckerDeployer(deployer).arbLayer();
     }
 
     //*********************************************************************//

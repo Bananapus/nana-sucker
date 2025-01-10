@@ -135,6 +135,36 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
     mapping(address token => JBRemoteToken remoteToken) internal _remoteTokenFor;
 
     //*********************************************************************//
+    // ---------------------------- constructor -------------------------- //
+    //*********************************************************************//
+
+    /// @param directory A contract storing directories of terminals and controllers for each project.
+    /// @param permissions A contract storing permissions.
+    /// @param tokens A contract that manages token minting and burning.
+    /// @param addToBalanceMode The mode of adding tokens to balance.
+    constructor(
+        IJBDirectory directory,
+        IJBPermissions permissions,
+        IJBTokens tokens,
+        JBAddToBalanceMode addToBalanceMode,
+        address trusted_forwarder
+    )
+        ERC2771Context(trusted_forwarder)
+        JBPermissioned(permissions)
+    {
+        DIRECTORY = directory;
+        TOKENS = tokens;
+        DEPLOYER = msg.sender;
+        ADD_TO_BALANCE_MODE = addToBalanceMode;
+
+        // Make it so the singleton can't be initialized.
+        _disableInitializers();
+
+        // Sanity check: make sure the merkle lib uses the same tree depth.
+        assert(MerkleLib.TREE_DEPTH == _TREE_DEPTH);
+    }
+
+    //*********************************************************************//
     // ------------------------ external views --------------------------- //
     //*********************************************************************//
 
@@ -290,36 +320,6 @@ abstract contract JBSucker is ERC2771Context, JBPermissioned, Initializable, ERC
     /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
     function _contextSuffixLength() internal view virtual override(ERC2771Context, Context) returns (uint256) {
         return ERC2771Context._contextSuffixLength();
-    }
-
-    //*********************************************************************//
-    // ---------------------------- constructor -------------------------- //
-    //*********************************************************************//
-
-    /// @param directory A contract storing directories of terminals and controllers for each project.
-    /// @param permissions A contract storing permissions.
-    /// @param tokens A contract that manages token minting and burning.
-    /// @param addToBalanceMode The mode of adding tokens to balance.
-    constructor(
-        IJBDirectory directory,
-        IJBPermissions permissions,
-        IJBTokens tokens,
-        JBAddToBalanceMode addToBalanceMode,
-        address trusted_forwarder
-    )
-        ERC2771Context(trusted_forwarder)
-        JBPermissioned(permissions)
-    {
-        DIRECTORY = directory;
-        TOKENS = tokens;
-        DEPLOYER = msg.sender;
-        ADD_TO_BALANCE_MODE = addToBalanceMode;
-
-        // Make it so the singleton can't be initialized.
-        _disableInitializers();
-
-        // Sanity check: make sure the merkle lib uses the same tree depth.
-        assert(MerkleLib.TREE_DEPTH == _TREE_DEPTH);
     }
 
     /// @notice Initializes the sucker with the project ID and peer address.

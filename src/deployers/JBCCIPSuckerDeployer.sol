@@ -30,15 +30,6 @@ contract JBCCIPSuckerDeployer is JBSuckerDeployer, IJBCCIPSuckerDeployer {
     ICCIPRouter public ccipRouter;
 
     //*********************************************************************//
-    // ------------------------ internal views --------------------------- //
-    //*********************************************************************//
-
-    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
-    function _layerSpecificConfigurationIsSet() internal view override returns (bool) {
-        return ccipRemoteChainId != 0 && ccipRemoteChainSelector != 0 && address(ccipRouter) != address(0);
-    }
-
-    //*********************************************************************//
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
@@ -55,6 +46,15 @@ contract JBCCIPSuckerDeployer is JBSuckerDeployer, IJBCCIPSuckerDeployer {
     )
         JBSuckerDeployer(directory, permissions, tokens, configurator, trusted_forwarder)
     {}
+
+    //*********************************************************************//
+    // ------------------------ internal views --------------------------- //
+    //*********************************************************************//
+
+    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
+    function _layerSpecificConfigurationIsSet() internal view override returns (bool) {
+        return ccipRemoteChainId != 0 && ccipRemoteChainSelector != 0 && address(ccipRouter) != address(0);
+    }
 
     //*********************************************************************//
     // --------------------- external transactions ----------------------- //

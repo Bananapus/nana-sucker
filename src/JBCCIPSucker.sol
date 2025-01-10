@@ -52,6 +52,32 @@ contract JBCCIPSucker is JBSucker, IAny2EVMMessageReceiver {
     uint64 public immutable REMOTE_CHAIN_SELECTOR;
 
     //*********************************************************************//
+    // ---------------------------- constructor -------------------------- //
+    //*********************************************************************//
+
+    /// @param deployer A contract that deploys the clones for this contracts.
+    /// @param directory A contract storing directories of terminals and controllers for each project.
+    /// @param tokens A contract that manages token minting and burning.
+    /// @param permissions A contract storing permissions.
+    /// @param addToBalanceMode The mode of adding tokens to balance.
+    constructor(
+        JBCCIPSuckerDeployer deployer,
+        IJBDirectory directory,
+        IJBTokens tokens,
+        IJBPermissions permissions,
+        JBAddToBalanceMode addToBalanceMode,
+        address trusted_forwarder
+    )
+        JBSucker(directory, permissions, tokens, addToBalanceMode, trusted_forwarder)
+    {
+        REMOTE_CHAIN_ID = IJBCCIPSuckerDeployer(deployer).ccipRemoteChainId();
+        REMOTE_CHAIN_SELECTOR = IJBCCIPSuckerDeployer(deployer).ccipRemoteChainSelector();
+        CCIP_ROUTER = IJBCCIPSuckerDeployer(deployer).ccipRouter();
+
+        if (address(CCIP_ROUTER) == address(0)) revert JBCCIPSucker_InvalidRouter(address(CCIP_ROUTER));
+    }
+
+    //*********************************************************************//
     // ------------------------ external views --------------------------- //
     //*********************************************************************//
 
@@ -84,32 +110,6 @@ contract JBCCIPSucker is JBSucker, IAny2EVMMessageReceiver {
     /// it at the time of execution (EXTCODESIZE returns 0), only tokens will be transferred.
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IAny2EVMMessageReceiver).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    //*********************************************************************//
-    // ---------------------------- constructor -------------------------- //
-    //*********************************************************************//
-
-    /// @param deployer A contract that deploys the clones for this contracts.
-    /// @param directory A contract storing directories of terminals and controllers for each project.
-    /// @param tokens A contract that manages token minting and burning.
-    /// @param permissions A contract storing permissions.
-    /// @param addToBalanceMode The mode of adding tokens to balance.
-    constructor(
-        JBCCIPSuckerDeployer deployer,
-        IJBDirectory directory,
-        IJBTokens tokens,
-        IJBPermissions permissions,
-        JBAddToBalanceMode addToBalanceMode,
-        address trusted_forwarder
-    )
-        JBSucker(directory, permissions, tokens, addToBalanceMode, trusted_forwarder)
-    {
-        REMOTE_CHAIN_ID = IJBCCIPSuckerDeployer(deployer).ccipRemoteChainId();
-        REMOTE_CHAIN_SELECTOR = IJBCCIPSuckerDeployer(deployer).ccipRemoteChainSelector();
-        CCIP_ROUTER = IJBCCIPSuckerDeployer(deployer).ccipRouter();
-
-        if (address(CCIP_ROUTER) == address(0)) revert JBCCIPSucker_InvalidRouter(address(CCIP_ROUTER));
     }
 
     //*********************************************************************//

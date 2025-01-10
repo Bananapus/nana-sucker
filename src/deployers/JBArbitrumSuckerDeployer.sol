@@ -26,16 +26,6 @@ contract JBArbitrumSuckerDeployer is JBSuckerDeployer, IJBArbitrumSuckerDeployer
     IArbGatewayRouter public override arbGatewayRouter;
 
     //*********************************************************************//
-    // ------------------------ internal views --------------------------- //
-    //*********************************************************************//
-
-    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
-    function _layerSpecificConfigurationIsSet() internal view override returns (bool) {
-        return uint256(arbLayer) != uint256(0) || address(arbInbox) != address(0)
-            || address(arbGatewayRouter) != address(0);
-    }
-
-    //*********************************************************************//
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
@@ -52,6 +42,16 @@ contract JBArbitrumSuckerDeployer is JBSuckerDeployer, IJBArbitrumSuckerDeployer
     )
         JBSuckerDeployer(directory, permissions, tokens, configurator, trusted_forwarder)
     {}
+
+    //*********************************************************************//
+    // ------------------------ internal views --------------------------- //
+    //*********************************************************************//
+
+    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
+    function _layerSpecificConfigurationIsSet() internal view override returns (bool) {
+        return uint256(arbLayer) != uint256(0) || address(arbInbox) != address(0)
+            || address(arbGatewayRouter) != address(0);
+    }
 
     //*********************************************************************//
     // --------------------- external transactions ----------------------- //

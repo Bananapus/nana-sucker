@@ -39,30 +39,6 @@ abstract contract JBSuckerDeployer is ERC2771Context, JBPermissioned, IJBSuckerD
     JBSucker public singleton;
 
     //*********************************************************************//
-    // ------------------------ internal views --------------------------- //
-    //*********************************************************************//
-
-    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
-    function _layerSpecificConfigurationIsSet() internal view virtual returns (bool);
-
-    /// @notice The message's sender. Preferred to use over `msg.sender`.
-    /// @return sender The address which sent this call.
-    function _msgSender() internal view override(ERC2771Context, Context) returns (address sender) {
-        return ERC2771Context._msgSender();
-    }
-
-    /// @notice The calldata. Preferred to use over `msg.data`.
-    /// @return calldata The `msg.data` of this call.
-    function _msgData() internal view override(ERC2771Context, Context) returns (bytes calldata) {
-        return ERC2771Context._msgData();
-    }
-
-    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
-    function _contextSuffixLength() internal view virtual override(ERC2771Context, Context) returns (uint256) {
-        return ERC2771Context._contextSuffixLength();
-    }
-
-    //*********************************************************************//
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
@@ -88,6 +64,30 @@ abstract contract JBSuckerDeployer is ERC2771Context, JBPermissioned, IJBSuckerD
         if (configurator == address(0) && !_layerSpecificConfigurationIsSet()) {
             revert JBSuckerDeployer_ZeroConfiguratorAddress();
         }
+    }
+
+    //*********************************************************************//
+    // ------------------------ internal views --------------------------- //
+    //*********************************************************************//
+
+    /// @notice Check if the layer specific configuration is set or not. Used as a sanity check.
+    function _layerSpecificConfigurationIsSet() internal view virtual returns (bool);
+
+    /// @notice The message's sender. Preferred to use over `msg.sender`.
+    /// @return sender The address which sent this call.
+    function _msgSender() internal view override(ERC2771Context, Context) returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
+
+    /// @notice The calldata. Preferred to use over `msg.data`.
+    /// @return calldata The `msg.data` of this call.
+    function _msgData() internal view override(ERC2771Context, Context) returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }
+
+    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
+    function _contextSuffixLength() internal view virtual override(ERC2771Context, Context) returns (uint256) {
+        return ERC2771Context._contextSuffixLength();
     }
 
     //*********************************************************************//

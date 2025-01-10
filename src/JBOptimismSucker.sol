@@ -38,21 +38,6 @@ contract JBOptimismSucker is JBSucker, IJBOptimismSucker {
     IOPMessenger public immutable override OPMESSENGER;
 
     //*********************************************************************//
-    // ------------------------ external views --------------------------- //
-    //*********************************************************************//
-
-    /// @notice Returns the chain on which the peer is located.
-    /// @return chainId of the peer.
-    function peerChainId() external view virtual override returns (uint256) {
-        uint256 chainId = block.chainid;
-        if (chainId == 1) return 10;
-        if (chainId == 10) return 1;
-        if (chainId == 11_155_111) return 11_155_420;
-        if (chainId == 11_155_420) return 11_155_111;
-        return 0;
-    }
-
-    //*********************************************************************//
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
@@ -74,6 +59,21 @@ contract JBOptimismSucker is JBSucker, IJBOptimismSucker {
         // Fetch the messenger and bridge by doing a callback to the deployer contract.
         OPBRIDGE = JBOptimismSuckerDeployer(deployer).opBridge();
         OPMESSENGER = JBOptimismSuckerDeployer(deployer).opMessenger();
+    }
+
+    //*********************************************************************//
+    // ------------------------ external views --------------------------- //
+    //*********************************************************************//
+
+    /// @notice Returns the chain on which the peer is located.
+    /// @return chainId of the peer.
+    function peerChainId() external view virtual override returns (uint256) {
+        uint256 chainId = block.chainid;
+        if (chainId == 1) return 10;
+        if (chainId == 10) return 1;
+        if (chainId == 11_155_111) return 11_155_420;
+        if (chainId == 11_155_420) return 11_155_111;
+        return 0;
     }
 
     //*********************************************************************//
